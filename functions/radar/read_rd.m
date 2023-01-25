@@ -22,8 +22,14 @@ i_s_wb = 0;
 N = numel(scans_filepath);
 wb = waitbar(0,"Clean and load weather radar data: "+ num2str(0) + "/"+num2str(N));
 
-
+% check that all file exist
 for i_s = 1:numel(scans_filepath)
+    if(~exist(scans_filepath(i_s),'file'))
+        error("scans_filepath does not exist")
+    end
+end
+
+parfor i_s = 1:numel(scans_filepath)
     rdt = rsl2mat_wrap(scans_filepath(i_s), struct('max_elev', parms.limitElev));
 
     % get unique sweeps

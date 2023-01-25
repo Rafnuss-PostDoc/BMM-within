@@ -10,11 +10,22 @@ for i_r = 1:height(rd)
     rs{i_r}.i_df = unique(vertcat(tmp{:}));
     rs{i_r}.lon = rd{i_r,1}.lon;
     rs{i_r}.lat = rd{i_r,1}.lat;
+    rs{i_r}.height = rd{i_r,1}.height;
     rs{i_r}.station = rd{i_r,1}.station;
 
     % Find location on grid
-    [~,rs{i_r}.lon_id]=min(abs(g.lon-rs{i_r}.lon));
-    [~,rs{i_r}.lat_id]=min(abs(g.lat-rs{i_r}.lat));
+    [~,lon_id]=min(abs(g.lon-rs{i_r}.lon));
+    [~,lat_id]=min(abs(g.lat-rs{i_r}.lat));
+    [~,z_id]  =min(squeeze(abs(g.z-rs{i_r}.height)));
+
+    % Convert the index of position in x,y,z on the radar volume to the
+    % position (index) of the multi-radar grid. This is done by offest
+    % the lat lon sub by the position of the radar. 
+    % get the position of the 0,0 of the coarse grid
+    rs{i_r}.lon_id = lon_id - ceil(df{1}.sz_coarse_grid(1)/2);
+    rs{i_r}.lat_id = lat_id - ceil(df{1}.sz_coarse_grid(2)/2);
+    rs{i_r}.z_id = 0; % z_id take ground level as reference. 
+   
 
     % Check that the radar is within the grid
 %     id_lon = rs{i_r}.lon_id - ceil(df.sz_coarse_grid(1)/2);
@@ -102,19 +113,11 @@ F_build = cell(numel(rs), numel(df));
 
 for i_r = 1:numel(rs) % through the radars
 
-    % Convert the index of position in x,y,z on the radar volume to the
-    % position (index) of the multi-radar grid. This is done by offest
-    % the lat lon sub by the position of the radar. 
-     % get the position of the 0,0 of the coarse grid
-    id_lon = rs{i_r}.lon_id - ceil(df{1}.sz_coarse_grid(1)/2);
-    id_lat = rs{i_r}.lat_id - ceil(df{1}.sz_coarse_grid(2)/2);
-    
     for i_f = 1:numel(df) % through the unique scan
 
         % 
         id_pres_data = ismember(df_i_f_F_raz_id{i_f},data_pres{i_r,i_f});
   
-
         % Assemble all the df of this scan/radar into a table to be able to
         % filter
         dfe = table( ...
@@ -127,9 +130,9 @@ for i_r = 1:numel(rs) % through the radars
             'VariableNames',{'x','y','z','id_d','Fval'});
 
         % Find location of the grid 
-        id_g_xyz = [dfe.x+id_lon dfe.y+id_lat dfe.z];
+        id_g_xyz = [dfe.x+rs{i_r}.lon_id dfe.y+rs{i_r}.lat_id dfe.z+rs{i_r}.z_id];
         % Filter for data outside the grid
-        id_F_keep = id_g_xyz(:,1)>=1 & id_g_xyz(:,1)<=g.sz(1) & id_g_xyz(:,2)>=1 & id_g_xyz(:,2)<=g.sz(2);
+        id_F_keep = id_g_xyz(:,1)>=1 & id_g_xyz(:,1)<=g.sz(1) & id_g_xyz(:,2)>=1 & id_g_xyz(:,2)<=g.sz(2) & id_g_xyz(:,3)>=1 & id_g_xyz(:,3)<=g.sz(3);
         if mean(id_F_keep)<1
             warning("Some part of radar is not covered by the grid")
         end

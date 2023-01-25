@@ -153,6 +153,7 @@ for i_t=1:numel(scan_time)
         id_full=1:prod(g.sz);
         Aspeed{i_t-1,i_t} = sparse(id_full(~isnan(id)),id(~isnan(id)),-coeff(~isnan(id)),prod(g.sz),prod(g.sz));
         Aspeed{i_t-1,i_t-1} = coeff(:).*speye(prod(g.sz));
+        %What is this?
         Aspeed{i_t-1,i_t-1}(isnan(id),:)=0;
     end
 end

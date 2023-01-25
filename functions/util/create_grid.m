@@ -29,6 +29,11 @@ end
 if nargin>5
     latmax=varargin{4};
 end
+if nargin>6
+    heightmax=varargin{5};
+else
+    heightmax=max(df{1}.z);
+end
 
 % Find how much 1km=degree
 lat_mean=(latmax+latmin)/2;
@@ -46,7 +51,7 @@ g.dx = diff(df{1}.x(1:2));
 g.x=(0:ceil(xmax/g.dx)+3)*g.dx;
 g.dy = unique(diff(df{1}.y));
 g.y=(0:ceil(ymax/g.dy)+3)'*g.dy;
-g.z=df{1}.z;
+g.z=df{1}.z(df{1}.z <= heightmax);
 
 g.sz = [numel(g.x) numel(g.y) numel(g.z)];
 
@@ -68,8 +73,17 @@ g.time = cellfun(@(x) x.datetime, rd(1,:));
 
 % Load water mask
 load("data/onwater/Fonwater.mat");
-g.mask_water = logical(Fonwater({g.f_lat(g.y),g.f_lon(g.x)}))'; clear Fonwater
-% figure; hold on; imagesc(g.f_lon(g.x),g.f_lat(g.y),onwater'); tmp=axis;borders('states','w'); plot(radar_lon, radar_lat,".r"); axis equal tight; axis(tmp);
+g.mask_water = logical(Fonwater({g.f_lat(g.y),g.f_lon(g.x)}))';
+% figure; hold on; imagesc(g.f_lon(g.x),g.f_lat(g.y),g.mask_water); tmp=axis;borders('states','w'); plot(radar_lon, radar_lat,".r"); axis equal tight; axis(tmp);
+
+% Load DEM
+load('data/DEM/dem');
+dem=double(dem); dem(dem==-9999)=-2;
+% demsm = imgaussfilt(dem,[100 100]);
+demsmf=griddedInterpolant({dem_lat,dem_lon},dem,'nearest');
+g.dem = demsmf({g.f_lat(g.y),g.f_lon(g.x)});
+
+% figure; hold on; imagesc(g.f_lon(g.x),g.f_lat(g.y),g.dem); tmp=axis; borders('states','w'); plot(radar_lon, radar_lat,".r"); axis equal tight; axis(tmp); demcmap([0 max(g.dem)]); 
 
 
 end

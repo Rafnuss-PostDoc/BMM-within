@@ -27,6 +27,7 @@ for i_s=1:numel(scan_radar)
         fl = dir(flr);
         fl = fl(3:end);
         fl = fl(~contains({fl.name},"_MDM"));
+        fl = fl(~contains({fl.name},"DS_Store"));
 
         % Get date of the available time.
         fl_date = NaT(numel(fl),1);
