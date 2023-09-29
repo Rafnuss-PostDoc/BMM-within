@@ -52,6 +52,7 @@ g.x=(0:ceil(xmax/g.dx)+3)*g.dx;
 g.dy = unique(diff(df{1}.y));
 g.y=(0:ceil(ymax/g.dy)+3)'*g.dy;
 g.z=df{1}.z(df{1}.z <= heightmax);
+g.dz = unique(diff(g.z));
 
 g.sz = [numel(g.x) numel(g.y) numel(g.z)];
 

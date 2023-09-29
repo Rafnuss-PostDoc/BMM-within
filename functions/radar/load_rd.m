@@ -21,11 +21,15 @@ for i_s=1:numel(scan_radar)
 
         % get folder location
         flr = "data/"+scan_radar(i_s)+"_"+datestr(scan_day(i_d),'yyyymmdd');
-        mkdir(flr)
+        if ~isfolder(flr)
+            mkdir(flr);
+        end
+        
 
         % List available file
         fl = dir(flr);
-        fl = fl(3:end);
+        fl = fl({fl.name}~="..");
+        fl = fl({fl.name}~=".");
         fl = fl(~contains({fl.name},"_MDM"));
         fl = fl(~contains({fl.name},"DS_Store"));
 
@@ -56,6 +60,7 @@ for i_s=1:numel(scan_radar)
                 warning("No data for "+scan_radar(i_s))
                 continue
             end
+
             for i_t = 1:numel(id_t)
                 % select only the closest
                 [closest_dur,id]=min(abs([files_day_info.datetime]-scan_time(id_t(i_t))));
@@ -68,6 +73,11 @@ for i_s=1:numel(scan_radar)
                 tmp = strsplit(files_day_info(id).name,"/");
                 if ~exist(flr+"/"+tmp{end},'file')
                     system( "/usr/local/bin/aws s3 cp s3://noaa-nexrad-level2/"+files_day_info(id).name+" "+flr+" --no-sign-request" );
+                    
+                    if contains(tmp{end},".gz")
+                        gunzip(flr+"/"+tmp{end}, flr)
+                        delete(flr+"/"+tmp{end})
+                    end
                 end
             end
 

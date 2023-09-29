@@ -248,6 +248,8 @@ function UpdateWaitbar(~)
     waitbar(i_s_wb/N,wb,"Clean and load weather radar data: "+ num2str(i_s_wb) + "/"+num2str(N));
     i_s_wb = i_s_wb + 1;
 end
-close(wb);
+if isvalid(wb)
+    close(wb);
+end
 end
 

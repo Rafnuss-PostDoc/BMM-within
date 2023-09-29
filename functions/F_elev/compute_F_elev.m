@@ -1,8 +1,8 @@
-function compute_F_elev(x, y, z, nxx, nyy, nzz, dfe)
+function compute_F_elev(x, y, z, nxx, nyy, nzz, dfe, thr_cumsum)
 % compute_F_elev compute the matrix F for a specific radar elevation scan
 % df and a grid specified by x,y,z. nxx, nyy, nzz are the downscaling of  
 % the grid on which the power function is approximated. 
-
+% thr_cumsum: 0.1, threashold of the cummulative sum of weight to keep
 disp(dfe.name)
 
 %% Define the grid
@@ -130,7 +130,7 @@ for i_range = 1:i_range_max
 
         % Keep grid scale which cumulative sum of f amount for more
         % than 10% of the sum
-        id_ss=cumsum(f_gs)./sum(f_gs)>.1;
+        id_ss=cumsum(f_gs)./sum(f_gs) > thr_cumsum;
 
         % Normalize the sum of f to 1 for this observation.
         Felevf{i_range,i_azim} = f_gs(id_ss)./sum(f_gs(id_ss));
@@ -150,7 +150,7 @@ for i_range = 1:i_range_max
         end
     end
 
-    disp(i_range+"/"+num2str(i_range_max)+" | "+num2str(round(toc(t1)))+"sec |"+num2str(round(toc(t2)))+"sec")
+    disp(i_range+"/"+num2str(i_range_max))
 end
 
 % Indices of F
